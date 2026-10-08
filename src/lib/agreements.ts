@@ -1,5 +1,5 @@
 import agreementsData from '../../data/agreements.json';
-import type { Agreement, AgreementLine, AgreementStatus, Location } from '../types';
+import type { Agreement, AgreementLine, AgreementStatus, Condition, Contact, Location } from '../types';
 
 export const baseAgreements = agreementsData as Agreement[];
 
@@ -48,4 +48,47 @@ export function sortForCounter(agreements: Agreement[], today: string): Agreemen
       a.dueBack.localeCompare(b.dueBack) ||
       a.raNumber.localeCompare(b.raNumber),
   );
+}
+
+export function nextRaNumber(agreements: Agreement[]): string {
+  const highest = Math.max(...agreements.map((agreement) => Number(agreement.raNumber.replace('RA-', ''))));
+  return `RA-${highest + 1}`;
+}
+
+export interface NewAgreementDetails {
+  production: string;
+  productionDetail: string;
+  contact: Contact;
+  location: Location;
+  dueBack: string;
+}
+
+export function openAgreement(
+  details: NewAgreementDetails,
+  raNumber: string,
+  staffInitials: string,
+  today: string,
+): Agreement {
+  return { ...details, raNumber, checkedOutBy: staffInitials, checkedOutOn: today, lines: [] };
+}
+
+export interface CheckOutItem {
+  assetTag: string;
+  condition: Condition;
+}
+
+export function addCheckOutLines(
+  agreement: Agreement,
+  items: CheckOutItem[],
+  staffInitials: string,
+  today: string,
+): Agreement {
+  const lines: AgreementLine[] = items.map((item) => ({
+    assetTag: item.assetTag,
+    checkedOutOn: today,
+    checkedOutBy: staffInitials,
+    conditionOut: item.condition,
+    returned: false,
+  }));
+  return { ...agreement, lines: [...agreement.lines, ...lines] };
 }

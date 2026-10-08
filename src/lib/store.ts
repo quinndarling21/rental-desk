@@ -7,7 +7,7 @@ const STORAGE_KEY = 'rental-desk.session';
 
 /**
  * Changes made at this counter on top of data/*.json. Agreements are stored
- * whole, keyed by RA number, so the latest copy simply replaces the original.
+ * whole, keyed by RA number, and replace the original when merged.
  */
 export interface SessionChanges {
   agreements: Record<string, Agreement>;
@@ -46,6 +46,13 @@ function commit(next: SessionChanges) {
 
 export function resetSessionChanges() {
   commit(noChanges);
+}
+
+/** Saves an agreement after a check-out and marks the items just added as Out. */
+export function saveCheckOut(agreement: Agreement, assetTags: string[]) {
+  const itemStatus = { ...changes.itemStatus };
+  for (const tag of assetTags) itemStatus[tag] = 'Out';
+  commit({ ...changes, agreements: { ...changes.agreements, [agreement.raNumber]: agreement }, itemStatus });
 }
 
 export function useSessionChanges(): SessionChanges {

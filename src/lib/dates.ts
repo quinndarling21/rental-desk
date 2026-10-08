@@ -1,5 +1,7 @@
 /** Dates are stored as YYYY-MM-DD strings, so they compare correctly as plain strings. */
 
+const displayFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
 /** Today's date at the counter (local time), as YYYY-MM-DD. */
 export function todayISO(now: Date = new Date()): string {
   const year = now.getFullYear();
@@ -10,9 +12,5 @@ export function todayISO(now: Date = new Date()): string {
 
 export function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return displayFormat.format(new Date(year, month - 1, day));
 }

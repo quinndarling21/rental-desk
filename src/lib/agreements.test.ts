@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Agreement, AgreementLine } from '../types';
-import { agreementStatus, baseAgreements, filterAgreements, itemsOut, sortForCounter } from './agreements';
+import {
+  addCheckOutLines,
+  agreementStatus,
+  baseAgreements,
+  filterAgreements,
+  itemsOut,
+  nextRaNumber,
+  sortForCounter,
+} from './agreements';
 import { baseInventory, findItem } from './inventory';
 
 const TODAY = '2026-10-08';
@@ -111,5 +119,31 @@ describe('agreement data', () => {
       .map((item) => item.assetTag)
       .sort();
     expect(openTags).toEqual(outTags);
+  });
+});
+
+describe('nextRaNumber', () => {
+  it('numbers a new agreement one past the highest RA', () => {
+    const list = [agreement({ raNumber: 'RA-24150' }), agreement({ raNumber: 'RA-24156' })];
+    expect(nextRaNumber(list)).toBe('RA-24157');
+  });
+});
+
+describe('addCheckOutLines', () => {
+  it('appends open lines stamped with the date, staff and condition', () => {
+    const updated = addCheckOutLines(
+      agreement({ lines: [line('BUR-LT-0142')] }),
+      [{ assetTag: 'BUR-PW-0090', condition: 'Needs service' }],
+      'OF',
+      TODAY,
+    );
+    expect(updated.lines).toHaveLength(2);
+    expect(updated.lines[1]).toEqual({
+      assetTag: 'BUR-PW-0090',
+      checkedOutOn: TODAY,
+      checkedOutBy: 'OF',
+      conditionOut: 'Needs service',
+      returned: false,
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { AgreementDetail } from './features/agreements/AgreementDetail';
 import { AgreementsList } from './features/agreements/AgreementsList';
+import { CheckOut } from './features/checkout/CheckOut';
 import { AppLayout } from './layout/AppLayout';
 import { NotFound } from './layout/NotFound';
 
@@ -11,6 +12,7 @@ export default function App() {
         <Route index element={<Navigate to="/agreements" replace />} />
         <Route path="agreements" element={<AgreementsList />} />
         <Route path="agreements/:raNumber" element={<AgreementDetail />} />
+        <Route path="checkout" element={<CheckOut />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

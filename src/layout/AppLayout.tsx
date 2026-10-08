@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router';
+import { useEffect } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import { StaffInitials } from '../components/StaffInitials';
 import { isLocation, LOCATIONS } from '../lib/locations';
 import { staff, staffAt } from '../lib/staff';
@@ -6,6 +7,11 @@ import { useCounter } from './CounterContext';
 
 export function AppLayout() {
   const { location, signedIn, setLocation, setSignedIn } = useCounter();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <div className="app">

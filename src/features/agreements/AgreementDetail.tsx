@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
+import { Banner } from '../../components/Banner';
 import { StaffInitials } from '../../components/StaffInitials';
 import { StatusBadge } from '../../components/StatusBadge';
 import { agreementStatus, itemsOut } from '../../lib/agreements';
@@ -6,8 +7,17 @@ import { formatDate, todayISO } from '../../lib/dates';
 import { findItem } from '../../lib/inventory';
 import { useAgreements, useInventory } from '../../lib/store';
 
+/** Check-out and return pass a confirmation message along in the navigation state. */
+function noticeFrom(state: unknown): string | null {
+  if (state && typeof state === 'object' && 'notice' in state && typeof state.notice === 'string') {
+    return state.notice;
+  }
+  return null;
+}
+
 export function AgreementDetail() {
   const { raNumber } = useParams();
+  const notice = noticeFrom(useLocation().state);
   const agreement = useAgreements().find((a) => a.raNumber === raNumber);
   const inventory = useInventory();
 
@@ -31,6 +41,12 @@ export function AgreementDetail() {
         Back to agreements
       </Link>
 
+      {notice && (
+        <Banner tone="success">
+          <p>{notice}</p>
+        </Banner>
+      )}
+
       <div className="page-header">
         <div>
           <p className="page-header__eyebrow mono">{agreement.raNumber}</p>
@@ -39,6 +55,11 @@ export function AgreementDetail() {
             <StatusBadge status={status} />
           </div>
           <p className="page-header__subtitle">{agreement.productionDetail}</p>
+        </div>
+        <div className="page-header__actions">
+          <Link className="button" to={`/checkout?ra=${agreement.raNumber}`}>
+            Check out more items
+          </Link>
         </div>
       </div>
 
