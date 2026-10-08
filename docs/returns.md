@@ -12,7 +12,9 @@ How a return is handled at the rental counter today, in Burbank, Atlanta and Alb
 6. The runner initials the paper slip. The counter staff member enters their initials in Rental Desk.
 7. Complete the return. The returned lines close, and the agreement shows Returned once every item is back.
 
-Condition is recorded with the dropdown and the notes field; the counter does not take photos at check-out or return.
+Condition is recorded with the dropdown and the notes field.
+
+Burbank is piloting photo check-in. When the Photo check-in switch in the top bar is on, each line needs a photo at check-out and again at return, plus a check-out condition note and an in-app customer acknowledgment (a typed name, which is a placeholder). The photo is stamped with the date, time, and signed-in staff member. Staff cannot edit that stamp. Mark all returned still only ticks the items; it does not set the condition or take the photos. Atlanta and Albuquerque stay on the process above. The bench can log a later finding, with a photo and a note, against a returned line. A counter lead can open a read-only link to that line's check-out, return, and bench photos. Photos stay in the browser until a backend is chosen.
 
 ## After the return
 

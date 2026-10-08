@@ -5,6 +5,8 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { agreementStatus, itemsOut } from '../../lib/agreements';
 import { formatDate, todayISO } from '../../lib/dates';
 import { findItem } from '../../lib/inventory';
+import { checkOutNoteLabel, photoCheckInActive } from '../../lib/photoCheckIn';
+import { usePhotoCheckInPilot } from '../../lib/pilot';
 import { useAgreements, useDamageReports, useInventory } from '../../lib/store';
 
 /** Check-out and return pass a confirmation message along in the navigation state. */
@@ -18,6 +20,7 @@ function noticeFrom(state: unknown): string | null {
 export function AgreementDetail() {
   const { raNumber } = useParams();
   const notice = noticeFrom(useLocation().state);
+  const pilotEnabled = usePhotoCheckInPilot();
   const agreement = useAgreements().find((a) => a.raNumber === raNumber);
   const inventory = useInventory();
   const damageReports = useDamageReports(raNumber ?? '');
@@ -35,6 +38,7 @@ export function AgreementDetail() {
 
   const status = agreementStatus(agreement, todayISO());
   const outCount = itemsOut(agreement).length;
+  const photosOn = photoCheckInActive(agreement.location, pilotEnabled);
 
   return (
     <>
@@ -114,7 +118,11 @@ export function AgreementDetail() {
         <section className="card card--flush card--flagged">
           <div className="card__header">
             <h2>Damage flags</h2>
-            <span className="muted">Counter lead reviews the return slip and opens any damage charge.</span>
+            <span className="muted">
+              {photosOn
+                ? 'Counter lead reviews the condition record. A damage charge is still opened outside Rental Desk.'
+                : 'Counter lead reviews the return slip and opens any damage charge.'}
+            </span>
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -164,9 +172,11 @@ export function AgreementDetail() {
                 <th>Item</th>
                 <th>Out</th>
                 <th>Condition out</th>
+                <th>Check-out note</th>
                 <th>Returned</th>
                 <th>Return condition</th>
                 <th>Return notes</th>
+                {photosOn && <th>Photos</th>}
               </tr>
             </thead>
             <tbody>
@@ -183,6 +193,7 @@ export function AgreementDetail() {
                   <td>
                     <StatusBadge status={line.conditionOut} />
                   </td>
+                  <td className="notes">{line.conditionOutNote !== undefined ? checkOutNoteLabel(line.conditionOutNote) : null}</td>
                   <td>
                     {line.returned ? (
                       <>
@@ -199,6 +210,17 @@ export function AgreementDetail() {
                   </td>
                   <td>{line.returnCondition ? <StatusBadge status={line.returnCondition} /> : null}</td>
                   <td className="notes">{line.returnNotes}</td>
+                  {photosOn && (
+                    <td>
+                      <Link to={`/agreements/${agreement.raNumber}/lines/${line.assetTag}`}>Photos</Link>
+                      {line.returned && (
+                        <>
+                          {' · '}
+                          <Link to={`/agreements/${agreement.raNumber}/lines/${line.assetTag}/bench`}>Bench finding</Link>
+                        </>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

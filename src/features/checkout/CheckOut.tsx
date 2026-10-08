@@ -2,6 +2,8 @@ import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Banner } from '../../components/Banner';
 import { ConditionSelect } from '../../components/ConditionSelect';
+import { CustomerAcknowledgment } from '../../components/CustomerAcknowledgment';
+import { PhotoCapture } from '../../components/PhotoCapture';
 import { useCounter } from '../../layout/CounterContext';
 import {
   addCheckOutLines,
@@ -12,12 +14,24 @@ import {
   openAgreement,
   type CheckOutItem,
 } from '../../lib/agreements';
+import { buildConditionRecord } from '../../lib/conditionRecords';
+import { getConditionStore } from '../../lib/conditionStore';
 import { formatDate, todayISO } from '../../lib/dates';
 import { availableAt, checkOutProblem, findItem, formatDailyRate } from '../../lib/inventory';
 import { isLocation, LOCATIONS } from '../../lib/locations';
+import {
+  acknowledgmentProblem,
+  checkOutPhotoProblems,
+  createCapturedPhoto,
+  lineKey,
+  photoCheckInActive,
+  releaseCapturedPhoto,
+  type CapturedPhoto,
+} from '../../lib/photoCheckIn';
+import { usePhotoCheckInPilot } from '../../lib/pilot';
 import { initialsProblem, staff } from '../../lib/staff';
 import { saveCheckOut, useAgreements, useInventory } from '../../lib/store';
-import type { InventoryItem, Location } from '../../types';
+import type { Condition, InventoryItem, Location } from '../../types';
 import { AvailableItems } from './AvailableItems';
 
 type AgreementMode = 'existing' | 'new';
@@ -31,10 +45,18 @@ interface NewAgreementForm {
   dueBack: string;
 }
 
+interface DraftLine {
+  assetTag: string;
+  condition: Condition;
+  note: string;
+  photos: CapturedPhoto[];
+}
+
 type FormErrors = Partial<Record<'agreement' | 'production' | 'dueBack' | 'items' | 'initials', string>>;
 
 export function CheckOut() {
-  const { location: counterLocation } = useCounter();
+  const { location: counterLocation, signedIn } = useCounter();
+  const pilotEnabled = usePhotoCheckInPilot();
   const agreements = useAgreements();
   const inventory = useInventory();
   const navigate = useNavigate();
@@ -54,14 +76,19 @@ export function CheckOut() {
     location: counterLocation,
     dueBack: '',
   });
-  const [items, setItems] = useState<CheckOutItem[]>([]);
+  const [items, setItems] = useState<DraftLine[]>([]);
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState<string | null>(null);
   const [initials, setInitials] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [acknowledged, setAcknowledged] = useState(false);
   const [attempted, setAttempted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const selected = openAgreements.find((agreement) => agreement.raNumber === raNumber);
   const location = locationOf(mode, raNumber, draft);
+  const photoCheckIn = location ? photoCheckInActive(location, pilotEnabled) : false;
   const available = location
     ? availableAt(inventory, location).filter((item) => !items.some((added) => added.assetTag === item.assetTag))
     : [];
@@ -72,9 +99,14 @@ export function CheckOut() {
     return openAgreements.find((agreement) => agreement.raNumber === nextRa)?.location;
   }
 
+  function discard(lines: DraftLine[]) {
+    for (const line of lines) for (const photo of line.photos) releaseCapturedPhoto(photo);
+  }
+
   // Gear goes out from one location, so moving the check-out elsewhere starts the item list over.
   function chooseAgreement(nextMode: AgreementMode, nextRa: string, nextDraft: NewAgreementForm) {
     if (locationOf(nextMode, nextRa, nextDraft) !== location) {
+      discard(items);
       setItems([]);
       setCodeError(null);
     }
@@ -93,7 +125,7 @@ export function CheckOut() {
     const problem = itemProblem(item);
     setCodeError(problem);
     if (problem) return;
-    setItems([...items, { assetTag: item.assetTag, condition: 'OK' }]);
+    setItems([...items, { assetTag: item.assetTag, condition: 'OK', note: '', photos: [] }]);
     setCode('');
   }
 
@@ -111,7 +143,31 @@ export function CheckOut() {
     }
   }
 
-  function validate(): FormErrors {
+  function addPhoto(assetTag: string, file: File) {
+    const photo = createCapturedPhoto(file, signedIn, new Date().toISOString());
+    setItems((current) =>
+      current.map((item) => (item.assetTag === assetTag ? { ...item, photos: [...item.photos, photo] } : item)),
+    );
+  }
+
+  function removePhoto(assetTag: string, photoId: string) {
+    setItems((current) =>
+      current.map((item) => {
+        if (item.assetTag !== assetTag) return item;
+        const photo = item.photos.find((candidate) => candidate.id === photoId);
+        if (photo) releaseCapturedPhoto(photo);
+        return { ...item, photos: item.photos.filter((candidate) => candidate.id !== photoId) };
+      }),
+    );
+  }
+
+  function removeItem(assetTag: string) {
+    const line = items.find((item) => item.assetTag === assetTag);
+    if (line) discard([line]);
+    setItems(items.filter((item) => item.assetTag !== assetTag));
+  }
+
+  function fieldErrors(): FormErrors {
     const found: FormErrors = {};
     if (mode === 'existing' && !selected) found.agreement = 'Choose an agreement.';
     if (mode === 'new' && !draft.production.trim()) found.production = 'Enter the production name.';
@@ -123,13 +179,29 @@ export function CheckOut() {
     return found;
   }
 
-  const errors = attempted ? validate() : {};
-  const errorMessages = Object.values(errors);
+  const errors = attempted ? fieldErrors() : {};
+  const photoProblems = checkOutPhotoProblems(
+    items.map((item) => ({ assetTag: item.assetTag, photoCount: item.photos.length })),
+    photoCheckIn,
+  );
+  const ackError = acknowledgmentProblem(customerName, acknowledged, photoCheckIn);
+  const errorMessages = [
+    ...Object.values(errors),
+    ...(attempted ? photoProblems : []),
+    ...(attempted && ackError ? [ackError] : []),
+    ...(saveError ? [saveError] : []),
+  ];
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setAttempted(true);
-    if (Object.keys(validate()).length > 0) return;
+    const fields = fieldErrors();
+    const photos = checkOutPhotoProblems(
+      items.map((item) => ({ assetTag: item.assetTag, photoCount: item.photos.length })),
+      photoCheckIn,
+    );
+    const acknowledgmentIssue = acknowledgmentProblem(customerName, acknowledged, photoCheckIn);
+    if (Object.keys(fields).length > 0 || photos.length > 0 || acknowledgmentIssue || saving) return;
 
     const staffInitials = initials.trim().toUpperCase();
     const agreement =
@@ -149,12 +221,62 @@ export function CheckOut() {
           );
     if (!agreement) return;
 
-    const updated = addCheckOutLines(agreement, items, staffInitials, today);
-    saveCheckOut(updated, items.map((added) => added.assetTag));
+    const checkoutItems: CheckOutItem[] = items.map((item) => ({
+      assetTag: item.assetTag,
+      condition: item.condition,
+      ...(photoCheckIn ? { note: item.note } : {}),
+    }));
+    const updated = addCheckOutLines(agreement, checkoutItems, staffInitials, today);
 
-    navigate(`/agreements/${updated.raNumber}`, {
-      state: { notice: `Checked out ${countItems(items.length)} to ${updated.production} on ${updated.raNumber}.` },
-    });
+    setSaving(true);
+    setSaveError(null);
+    try {
+      if (photoCheckIn) {
+        const store = getConditionStore();
+        const recordedAt = new Date().toISOString();
+        const acknowledgment = {
+          customerName: customerName.trim(),
+          acknowledgedAt: recordedAt,
+          method: 'tap-name-placeholder' as const,
+        };
+        for (const item of items) {
+          const key = lineKey(updated.raNumber, item.assetTag, today);
+          for (const photo of item.photos) {
+            await store.savePhoto({
+              id: photo.id,
+              raNumber: updated.raNumber,
+              assetTag: item.assetTag,
+              lineKey: key,
+              stage: 'check-out',
+              stamp: photo.stamp,
+              blob: photo.blob,
+            });
+          }
+          await store.saveConditionRecord(
+            buildConditionRecord({
+              raNumber: updated.raNumber,
+              assetTag: item.assetTag,
+              lineKey: key,
+              stage: 'check-out',
+              condition: item.condition,
+              note: item.note,
+              photoIds: item.photos.map((photo) => photo.id),
+              recordedAt,
+              recordedBy: staffInitials,
+              acknowledgment,
+            }),
+          );
+        }
+      }
+
+      saveCheckOut(updated, items.map((added) => added.assetTag));
+      navigate(`/agreements/${updated.raNumber}`, {
+        state: { notice: `Checked out ${countItems(items.length)} to ${updated.production} on ${updated.raNumber}.` },
+      });
+    } catch {
+      setSaveError('Could not save condition photos in this browser. Check-out was not completed.');
+      setSaving(false);
+    }
   }
 
   return (
@@ -162,11 +284,15 @@ export function CheckOut() {
       <div className="page-header">
         <div>
           <h1>Check out</h1>
-          <p className="page-header__subtitle">Put gear out on a rental agreement.</p>
+          <p className="page-header__subtitle">
+            {photoCheckIn
+              ? 'Burbank photo check-in is on. Each item needs at least one photo. The stamp is the date, time, and staff member, and it cannot be edited.'
+              : 'Put gear out on a rental agreement.'}
+          </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={(event) => void handleSubmit(event)} noValidate>
         <section className="card">
           <div className="card__header">
             <h2>Agreement</h2>
@@ -344,6 +470,69 @@ export function CheckOut() {
 
           {items.length === 0 ? (
             <p className="muted items-empty">No items on this check-out yet.</p>
+          ) : photoCheckIn ? (
+            <ul className="checkout-lines">
+              {items.map((added) => {
+                const item = findItem(inventory, added.assetTag);
+                const photoMissing = attempted && added.photos.length === 0;
+                return (
+                  <li key={added.assetTag} className="checkout-line">
+                    <div className="checkout-line__top">
+                      <div>
+                        <div className="mono">{added.assetTag}</div>
+                        <div>
+                          {item?.name}
+                          {item && <span className="muted"> · {formatDailyRate(item.dailyRate)}</span>}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="button button--link"
+                        aria-label={`Remove ${added.assetTag}`}
+                        onClick={() => removeItem(added.assetTag)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="form-row">
+                      <div className="field">
+                        <span className="field__label">Condition at check-out</span>
+                        <ConditionSelect
+                          label={`Condition at check-out for ${added.assetTag}`}
+                          value={added.condition}
+                          onChange={(condition) => {
+                            if (condition === '') return;
+                            setItems(items.map((i) => (i.assetTag === added.assetTag ? { ...i, condition } : i)));
+                          }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label className="field__label" htmlFor={`note-${added.assetTag}`}>
+                          Condition note
+                        </label>
+                        <textarea
+                          id={`note-${added.assetTag}`}
+                          className="textarea"
+                          rows={2}
+                          value={added.note}
+                          placeholder="Pre-existing wear. Leave blank if none."
+                          onChange={(event) =>
+                            setItems(items.map((i) => (i.assetTag === added.assetTag ? { ...i, note: event.target.value } : i)))
+                          }
+                        />
+                      </div>
+                    </div>
+                    <PhotoCapture
+                      label={`Check-out photo for ${added.assetTag}`}
+                      photos={added.photos}
+                      onAdd={(file) => addPhoto(added.assetTag, file)}
+                      onRemove={(id) => removePhoto(added.assetTag, id)}
+                    />
+                    {photoMissing && <p className="field__error">Add a check-out photo for {added.assetTag}.</p>}
+                  </li>
+                );
+              })}
+            </ul>
           ) : (
             <div className="table-wrap items-table">
               <table className="table">
@@ -370,9 +559,10 @@ export function CheckOut() {
                           <ConditionSelect
                             label={`Condition at check-out for ${added.assetTag}`}
                             value={added.condition}
-                            onChange={(condition) =>
-                              setItems(items.map((i) => (i.assetTag === added.assetTag ? { ...i, condition } : i)))
-                            }
+                            onChange={(condition) => {
+                              if (condition === '') return;
+                              setItems(items.map((i) => (i.assetTag === added.assetTag ? { ...i, condition } : i)));
+                            }}
                           />
                         </td>
                         <td className="numeric">
@@ -380,7 +570,7 @@ export function CheckOut() {
                             type="button"
                             className="button button--link"
                             aria-label={`Remove ${added.assetTag}`}
-                            onClick={() => setItems(items.filter((i) => i.assetTag !== added.assetTag))}
+                            onClick={() => removeItem(added.assetTag)}
                           >
                             Remove
                           </button>
@@ -397,6 +587,14 @@ export function CheckOut() {
         </section>
 
         <section className="card">
+          {photoCheckIn && (
+            <CustomerAcknowledgment
+              name={customerName}
+              acknowledged={acknowledged}
+              onName={setCustomerName}
+              onAcknowledged={setAcknowledged}
+            />
+          )}
           <div className="sign-off">
             <div className="field">
               <label className="field__label" htmlFor="checkout-initials">
@@ -412,8 +610,8 @@ export function CheckOut() {
                 onChange={(event) => setInitials(event.target.value)}
               />
             </div>
-            <button type="submit" className="button button--primary">
-              Complete check-out
+            <button type="submit" className="button button--primary" disabled={saving}>
+              {saving ? 'Saving check-out…' : 'Complete check-out'}
             </button>
           </div>
 

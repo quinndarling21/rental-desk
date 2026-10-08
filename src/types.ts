@@ -38,11 +38,70 @@ export interface AgreementLine {
   checkedOutOn: string;
   checkedOutBy: string;
   conditionOut: Condition;
+  /**
+   * Wear note from check-out. Missing on lines from before photo check-in;
+   * an empty string means the counter recorded that there was nothing to note.
+   */
+  conditionOutNote?: string;
   returned: boolean;
   returnedOn?: string;
   returnedBy?: string;
   returnCondition?: Condition;
   returnNotes?: string;
+}
+
+export type PhotoStage = 'check-out' | 'return' | 'bench';
+
+/** Written once, when the photo is taken. Staff cannot change it. */
+export interface PhotoStamp {
+  takenAt: string;
+  staffId: string;
+  staffName: string;
+  staffInitials: string;
+}
+
+export interface ConditionAcknowledgment {
+  customerName: string;
+  acknowledgedAt: string;
+  /** Placeholder until signature, tap, or email is chosen. */
+  method: 'tap-name-placeholder';
+}
+
+export interface ConditionRecord {
+  id: string;
+  raNumber: string;
+  assetTag: string;
+  lineKey: string;
+  stage: 'check-out' | 'return';
+  condition: Condition;
+  note: string;
+  photoIds: string[];
+  recordedAt: string;
+  recordedBy: string;
+  acknowledgment: ConditionAcknowledgment;
+}
+
+export interface BenchFinding {
+  id: string;
+  raNumber: string;
+  assetTag: string;
+  lineKey: string;
+  note: string;
+  photoIds: string[];
+  loggedAt: string;
+  loggedBy: string;
+}
+
+export interface ShareLink {
+  token: string;
+  raNumber: string;
+  assetTag: string;
+  lineKey: string;
+  itemName: string;
+  production: string;
+  createdAt: string;
+  /** Null until expiry is decided. Placeholder links do not expire. */
+  expiresAt: null;
 }
 
 export interface Agreement {
