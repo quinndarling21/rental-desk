@@ -1,0 +1,100 @@
+[
+  {
+    "raNumber": "RA-24141",
+    "production": "Night Ferry",
+    "productionDetail": "Season 2",
+    "contact": { "name": "Dana Whitlock", "phone": "(818) 555-0142" },
+    "location": "Burbank",
+    "checkedOutBy": "OF",
+    "checkedOutOn": "2026-09-28",
+    "dueBack": "2026-10-06",
+    "lines": [
+      { "assetTag": "BUR-LT-0142", "checkedOutOn": "2026-09-28", "checkedOutBy": "OF", "conditionOut": "OK", "returned": false },
+      { "assetTag": "BUR-LT-0157", "checkedOutOn": "2026-09-28", "checkedOutBy": "OF", "conditionOut": "OK", "returned": false },
+      { "assetTag": "BUR-GR-0203", "checkedOutOn": "2026-09-28", "checkedOutBy": "OF", "conditionOut": "OK", "returned": false },
+      {
+        "assetTag": "BUR-GR-0218",
+        "checkedOutOn": "2026-09-28",
+        "checkedOutBy": "OF",
+        "conditionOut": "OK",
+        "returned": true,
+        "returnedOn": "2026-10-03",
+        "returnedBy": "LI",
+        "returnCondition": "OK",
+        "returnNotes": "Sent back early, not needed for night exteriors."
+      }
+    ]
+  },
+  {
+    "raNumber": "RA-24144",
+    "production": "Copper Ridge",
+    "productionDetail": "Pilot",
+    "contact": { "name": "Marcus Bell", "phone": "(404) 555-0117" },
+    "location": "Atlanta",
+    "checkedOutBy": "GK",
+    "checkedOutOn": "2026-09-30",
+    "dueBack": "2026-10-08",
+    "lines": [
+      { "assetTag": "ATL-LT-0221", "checkedOutOn": "2026-09-30", "checkedOutBy": "GK", "conditionOut": "OK", "returned": false },
+      { "assetTag": "ATL-GR-0310", "checkedOutOn": "2026-09-30", "checkedOutBy": "GK", "conditionOut": "OK", "returned": false },
+      { "assetTag": "ATL-GR-0314", "checkedOutOn": "2026-09-30", "checkedOutBy": "GK", "conditionOut": "OK", "returned": false }
+    ]
+  },
+  {
+    "raNumber": "RA-24147",
+    "production": "Harbor Lights",
+    "productionDetail": "Series",
+    "contact": { "name": "Renee Okafor", "phone": "(404) 555-0163" },
+    "location": "Atlanta",
+    "checkedOutBy": "TG",
+    "checkedOutOn": "2026-10-01",
+    "dueBack": "2026-10-16",
+    "lines": [
+      { "assetTag": "ATL-PW-0058", "checkedOutOn": "2026-10-01", "checkedOutBy": "TG", "conditionOut": "OK", "returned": false },
+      { "assetTag": "ATL-PW-0061", "checkedOutOn": "2026-10-03", "checkedOutBy": "GK", "conditionOut": "OK", "returned": false }
+    ]
+  },
+  {
+    "raNumber": "RA-24150",
+    "production": "Mesa Line",
+    "productionDetail": "Feature",
+    "contact": { "name": "Hollis Tran", "phone": "(505) 555-0129" },
+    "location": "Albuquerque",
+    "checkedOutBy": "RD",
+    "checkedOutOn": "2026-09-24",
+    "dueBack": "2026-10-10",
+    "lines": [
+      { "assetTag": "ABQ-PW-0077", "checkedOutOn": "2026-09-24", "checkedOutBy": "RD", "conditionOut": "OK", "returned": false },
+      { "assetTag": "ABQ-GR-0402", "checkedOutOn": "2026-09-24", "checkedOutBy": "RD", "conditionOut": "OK", "returned": false },
+      { "assetTag": "ABQ-GR-0405", "checkedOutOn": "2026-09-24", "checkedOutBy": "RD", "conditionOut": "OK", "returned": false }
+    ]
+  },
+  {
+    "raNumber": "RA-24153",
+    "production": "Blue Hour",
+    "productionDetail": "Commercial for Ferncastle Coffee",
+    "contact": { "name": "Celia Navarro", "phone": "(818) 555-0186" },
+    "location": "Burbank",
+    "checkedOutBy": "LI",
+    "checkedOutOn": "2026-10-05",
+    "dueBack": "2026-10-08",
+    "lines": [
+      { "assetTag": "BUR-LT-0166", "checkedOutOn": "2026-10-05", "checkedOutBy": "LI", "conditionOut": "OK", "returned": false },
+      { "assetTag": "BUR-GR-0225", "checkedOutOn": "2026-10-05", "checkedOutBy": "LI", "conditionOut": "OK", "returned": false }
+    ]
+  },
+  {
+    "raNumber": "RA-24156",
+    "production": "Paper Saints",
+    "productionDetail": "Limited series",
+    "contact": { "name": "Tomas Reyes", "phone": "(505) 555-0171" },
+    "location": "Albuquerque",
+    "checkedOutBy": "JM",
+    "checkedOutOn": "2026-10-02",
+    "dueBack": "2026-10-09",
+    "lines": [
+      { "assetTag": "ABQ-LT-0019", "checkedOutOn": "2026-10-02", "checkedOutBy": "JM", "conditionOut": "OK", "returned": false },
+      { "assetTag": "ABQ-LT-0024", "checkedOutOn": "2026-10-02", "checkedOutBy": "JM", "conditionOut": "OK", "returned": false }
+    ]
+  }
+]
