@@ -8,14 +8,27 @@ export function photoCheckInActive(location: string, pilotEnabled: boolean): boo
   return pilotEnabled && location === PHOTO_CHECKIN_PILOT_LOCATION;
 }
 
-export function lineKey(raNumber: string, assetTag: string, checkedOutOn: string): string {
-  return `${raNumber}:${assetTag}:${checkedOutOn}`;
+/**
+ * One checkout on an agreement. `checkedOutOn` is only a calendar day, so a later
+ * checkout of the same asset — including later the same day — needs the line index.
+ */
+export function lineKey(raNumber: string, assetTag: string, checkedOutOn: string, lineIndex: number): string {
+  return `${raNumber}:${assetTag}:${checkedOutOn}:${lineIndex}`;
 }
 
-/** Prefer the open line when the same asset appears more than once on an agreement. */
-export function lineForAsset(lines: AgreementLine[], assetTag: string): AgreementLine | undefined {
-  const matches = lines.filter((line) => line.assetTag === assetTag);
-  return matches.find((line) => !line.returned) ?? matches[matches.length - 1];
+/** The line a photo or bench route names. The same asset can be out again after it comes back. */
+export function lineAt(lines: AgreementLine[], lineIndex: number): AgreementLine | undefined {
+  if (!Number.isInteger(lineIndex) || lineIndex < 0 || lineIndex >= lines.length) return undefined;
+  return lines[lineIndex];
+}
+
+/**
+ * Photo check-in leaves the condition blank until someone sets it. Turning the pilot
+ * off keeps that blank in the form; the other counters default it to OK.
+ */
+export function legacyReturnCondition(condition: Condition | '', photoCheckIn: boolean): Condition | '' {
+  if (!photoCheckIn && condition === '') return 'OK';
+  return condition;
 }
 
 export function checkOutNoteLabel(note: string | undefined): string {

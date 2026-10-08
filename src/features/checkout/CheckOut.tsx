@@ -239,8 +239,9 @@ export function CheckOut() {
           acknowledgedAt: recordedAt,
           method: 'tap-name-placeholder' as const,
         };
-        for (const item of items) {
-          const key = lineKey(updated.raNumber, item.assetTag, today);
+        const firstNewIndex = agreement.lines.length;
+        for (const [offset, item] of items.entries()) {
+          const key = lineKey(updated.raNumber, item.assetTag, today, firstNewIndex + offset);
           for (const photo of item.photos) {
             await store.savePhoto({
               id: photo.id,

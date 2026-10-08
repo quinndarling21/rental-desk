@@ -18,8 +18,8 @@ export default function App() {
         <Route path="agreements" element={<AgreementsList />} />
         <Route path="agreements/:raNumber" element={<AgreementDetail />} />
         <Route path="agreements/:raNumber/return" element={<ReturnCheckIn />} />
-        <Route path="agreements/:raNumber/lines/:assetTag/bench" element={<BenchFindingForm />} />
-        <Route path="agreements/:raNumber/lines/:assetTag" element={<LinePhotos />} />
+        <Route path="agreements/:raNumber/lines/:lineIndex/bench" element={<BenchFindingForm />} />
+        <Route path="agreements/:raNumber/lines/:lineIndex" element={<LinePhotos />} />
         <Route path="checkout" element={<CheckOut />} />
         <Route path="*" element={<NotFound />} />
       </Route>

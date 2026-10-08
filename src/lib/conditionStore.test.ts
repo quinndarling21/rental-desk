@@ -38,6 +38,18 @@ describe('condition store', () => {
     expect(loaded.photos[0].stamp.takenAt).toBe('2026-10-08T15:04:00.000Z');
   });
 
+  it('accepts a retry of a photo already stored by a partial save', async () => {
+    const store = createMemoryConditionStore();
+    const original = photo('photo-1');
+
+    await store.savePhoto(original);
+    await store.savePhoto(original);
+
+    const loaded = await store.loadLine(original.lineKey);
+    expect(loaded.photos).toHaveLength(1);
+    expect(loaded.photos[0].stamp.staffName).toBe('Omar Farouk');
+  });
+
   it('keeps a bench finding on the line it was logged against', async () => {
     const store = createMemoryConditionStore();
     const finding = buildBenchFinding({

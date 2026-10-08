@@ -87,7 +87,11 @@ export function createMemoryConditionStore(): ConditionStore {
 
   return {
     async savePhoto(photo) {
-      if (photos.has(photo.id)) editPhotoStamp(photo.id);
+      const existing = photos.get(photo.id);
+      if (existing) {
+        if (!isSameCapture(existing, photo)) editPhotoStamp(photo.id);
+        return;
+      }
       photos.set(photo.id, photo);
     },
     async saveConditionRecord(record) {
@@ -192,6 +196,18 @@ function readAll<T>(storeName: string, indexName: string, query: string): Promis
   );
 }
 
+/** A submit retry resends the capture. The same stamp is not an edit, so the stored photo stays. */
+function isSameCapture(existing: NewPhoto, incoming: NewPhoto): boolean {
+  const saved = existing.stamp;
+  const next = incoming.stamp;
+  return (
+    saved.takenAt === next.takenAt &&
+    saved.staffId === next.staffId &&
+    saved.staffName === next.staffName &&
+    saved.staffInitials === next.staffInitials
+  );
+}
+
 function savePhotoOnce(photo: NewPhoto): Promise<void> {
   return openDb().then(
     (db) =>
@@ -218,7 +234,9 @@ function savePhotoOnce(photo: NewPhoto): Promise<void> {
         };
         const lookup = tx.objectStore('photos').get(photo.id);
         lookup.onsuccess = () => {
-          if (lookup.result) {
+          const existing = lookup.result as NewPhoto | undefined;
+          if (existing) {
+            if (isSameCapture(existing, photo)) return;
             try {
               editPhotoStamp(photo.id);
             } catch (error) {

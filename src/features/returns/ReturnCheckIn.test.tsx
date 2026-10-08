@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -71,6 +71,20 @@ describe('ReturnCheckIn', () => {
     expect(screen.getByText('Flagged to Luis Ibarra')).toBeDefined();
     expect(screen.getAllByText('Front glass cracked.')).toHaveLength(2);
     expect(screen.getByText('1 of 4')).toBeDefined();
+  });
+
+  it('does not flag every line when photo check-in is turned off after rows were marked', async () => {
+    setPhotoCheckInPilot(true);
+    const user = renderReturn('RA-24153');
+
+    await user.click(screen.getByRole('button', { name: 'Mark all returned' }));
+    act(() => setPhotoCheckInPilot(false));
+    await user.type(screen.getByLabelText('Counter staff initials'), 'LI');
+    await user.click(screen.getByRole('button', { name: 'Complete return' }));
+
+    expect(screen.getByRole('status').textContent).toContain('the agreement is marked Returned');
+    expect(screen.getByRole('status').textContent).not.toContain('flagged');
+    expect(screen.queryByRole('heading', { name: 'Damage flags' })).toBeNull();
   });
 
   it('marks the agreement Returned when the last items come back', async () => {

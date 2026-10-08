@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { AgreementLine } from '../types';
 import { buildBenchFinding } from './conditionRecords';
 import {
   acknowledgmentProblem,
@@ -8,6 +9,8 @@ import {
   checkOutNoteLabel,
   checkOutPhotoProblems,
   editPhotoStamp,
+  legacyReturnCondition,
+  lineAt,
   lineKey,
   markReturned,
   photoCheckInActive,
@@ -84,6 +87,12 @@ describe('return photos and condition', () => {
     ]);
   });
 
+  it('treats a blank condition as OK once photo check-in is off', () => {
+    expect(legacyReturnCondition('', false)).toBe('OK');
+    expect(legacyReturnCondition('', true)).toBe('');
+    expect(legacyReturnCondition('Damaged', false)).toBe('Damaged');
+  });
+
   it('keeps the existing note rule for damaged gear when photo check-in is off', () => {
     expect(
       returnPhotoProblems(
@@ -127,9 +136,35 @@ describe('condition notes and acknowledgment', () => {
   });
 });
 
+describe('line identity', () => {
+  const returned: AgreementLine = {
+    assetTag: 'BUR-LT-0142',
+    checkedOutOn: '2026-10-08',
+    checkedOutBy: 'OF',
+    conditionOut: 'OK',
+    returned: true,
+  };
+  const outAgain: AgreementLine = { ...returned, checkedOutBy: 'LI', returned: false };
+
+  it('keeps a later checkout of the same asset, including the same day, on its own line', () => {
+    const lines = [returned, outAgain];
+
+    expect(lineKey('RA-24141', returned.assetTag, returned.checkedOutOn, 0)).toBe(
+      'RA-24141:BUR-LT-0142:2026-10-08:0',
+    );
+    expect(lineKey('RA-24141', outAgain.assetTag, outAgain.checkedOutOn, 1)).toBe(
+      'RA-24141:BUR-LT-0142:2026-10-08:1',
+    );
+    expect(lineAt(lines, 0)).toBe(returned);
+    expect(lineAt(lines, 1)).toBe(outAgain);
+    expect(lineAt(lines, -1)).toBeUndefined();
+    expect(lineAt(lines, 1.5)).toBeUndefined();
+  });
+});
+
 describe('bench findings', () => {
   it('attaches the finding to the returned agreement line', () => {
-    const key = lineKey('RA-24141', 'BUR-LT-0142', '2026-09-28');
+    const key = lineKey('RA-24141', 'BUR-LT-0142', '2026-09-28', 0);
     const finding = buildBenchFinding({
       raNumber: 'RA-24141',
       assetTag: 'BUR-LT-0142',
@@ -142,7 +177,7 @@ describe('bench findings', () => {
 
     expect(finding.raNumber).toBe('RA-24141');
     expect(finding.assetTag).toBe('BUR-LT-0142');
-    expect(finding.lineKey).toBe('RA-24141:BUR-LT-0142:2026-09-28');
+    expect(finding.lineKey).toBe('RA-24141:BUR-LT-0142:2026-09-28:0');
     expect(finding.photoIds).toEqual(['bench-photo-1']);
     expect(finding.note).toBe('Yoke cracked after it came back.');
   });

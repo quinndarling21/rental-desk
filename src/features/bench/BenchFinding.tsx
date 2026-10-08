@@ -9,7 +9,7 @@ import { findItem } from '../../lib/inventory';
 import {
   benchFindingProblems,
   createCapturedPhoto,
-  lineForAsset,
+  lineAt,
   lineKey,
   photoCheckInActive,
   releaseCapturedPhoto,
@@ -19,7 +19,7 @@ import { usePhotoCheckInPilot } from '../../lib/pilot';
 import { useAgreements, useInventory } from '../../lib/store';
 
 export function BenchFindingForm() {
-  const { raNumber = '', assetTag = '' } = useParams();
+  const { raNumber = '', lineIndex: lineIndexParam = '' } = useParams();
   const agreement = useAgreements().find((item) => item.raNumber === raNumber);
   const inventory = useInventory();
   const { signedIn } = useCounter();
@@ -42,7 +42,8 @@ export function BenchFindingForm() {
     );
   }
 
-  const line = lineForAsset(agreement.lines, assetTag);
+  const lineIndex = Number(lineIndexParam);
+  const line = lineAt(agreement.lines, lineIndex);
   const itemName = line ? (findItem(inventory, line.assetTag)?.name ?? 'Unknown item') : 'Unknown item';
   const photosOn = photoCheckInActive(agreement.location, pilot);
   const problems = benchFindingProblems(note, photos.length);
@@ -70,7 +71,7 @@ export function BenchFindingForm() {
     const finding = buildBenchFinding({
       raNumber: agreement.raNumber,
       assetTag: line.assetTag,
-      lineKey: lineKey(agreement.raNumber, line.assetTag, line.checkedOutOn),
+      lineKey: lineKey(agreement.raNumber, line.assetTag, line.checkedOutOn, lineIndex),
       note,
       photoIds: photos.map((photo) => photo.id),
       loggedAt,
@@ -91,7 +92,7 @@ export function BenchFindingForm() {
         });
       }
       await store.saveBenchFinding(finding);
-      navigate(`/agreements/${agreement.raNumber}/lines/${line.assetTag}`, {
+      navigate(`/agreements/${agreement.raNumber}/lines/${lineIndex}`, {
         state: { notice: `Bench finding saved on ${line.assetTag}.` },
       });
     } catch {
@@ -102,7 +103,7 @@ export function BenchFindingForm() {
 
   return (
     <>
-      <Link className="back-link" to={`/agreements/${agreement.raNumber}/lines/${assetTag}`}>
+      <Link className="back-link" to={`/agreements/${agreement.raNumber}/lines/${lineIndex}`}>
         Back to photos
       </Link>
       <div className="page-header">
@@ -110,14 +111,15 @@ export function BenchFindingForm() {
           <p className="page-header__eyebrow mono">{agreement.raNumber}</p>
           <h1>Bench finding</h1>
           <p className="page-header__subtitle">
-            {itemName}, {assetTag}. Log damage found after return. This is not a damage charge.
+            {line ? `${itemName}, ${line.assetTag}. ` : ''}
+            Log damage found after return. This is not a damage charge.
           </p>
         </div>
       </div>
 
       {!line ? (
         <section className="card empty-state">
-          <p>{assetTag} is not on this agreement.</p>
+          <p>That line is not on this agreement.</p>
         </section>
       ) : !photosOn ? (
         <section className="card empty-state">
@@ -125,7 +127,7 @@ export function BenchFindingForm() {
         </section>
       ) : !line.returned ? (
         <section className="card empty-state">
-          <p>The bench logs a finding after the item is returned. {assetTag} is still out.</p>
+          <p>The bench logs a finding after the item is returned. {line.assetTag} is still out.</p>
         </section>
       ) : (
         <form onSubmit={(event) => void handleSubmit(event)} noValidate>

@@ -15,6 +15,7 @@ import {
   acknowledgmentProblem,
   checkOutNoteLabel,
   createCapturedPhoto,
+  legacyReturnCondition,
   lineKey,
   photoCheckInActive,
   releaseCapturedPhoto,
@@ -57,7 +58,11 @@ export function ReturnCheckIn() {
 
   const openLines = itemsOut(agreement);
   const alreadyBack = agreement.lines.length - openLines.length;
-  const rowFor = (assetTag: string) => rows[assetTag] ?? untouchedRow(photoCheckIn);
+  const rowFor = (assetTag: string) => {
+    const stored = rows[assetTag] ?? untouchedRow(photoCheckIn);
+    const condition = legacyReturnCondition(stored.condition, photoCheckIn);
+    return condition === stored.condition ? stored : { ...stored, condition };
+  };
   const marked = openLines.filter((line) => rowFor(line.assetTag).returned);
   const initialsError = initialsProblem(staff, initials);
   const problems = returnPhotoProblems(
@@ -141,7 +146,7 @@ export function ReturnCheckIn() {
         };
         for (const line of marked) {
           const row = rowFor(line.assetTag);
-          const key = lineKey(agreement.raNumber, line.assetTag, line.checkedOutOn);
+          const key = lineKey(agreement.raNumber, line.assetTag, line.checkedOutOn, agreement.lines.indexOf(line));
           for (const photo of row.photos) {
             await store.savePhoto({
               id: photo.id,
@@ -238,7 +243,12 @@ export function ReturnCheckIn() {
                   onAddPhoto={addPhoto}
                   onRemovePhoto={removePhoto}
                   checkoutPhotos={(line) => {
-                    const key = lineKey(agreement.raNumber, line.assetTag, line.checkedOutOn);
+                    const key = lineKey(
+                      agreement.raNumber,
+                      line.assetTag,
+                      line.checkedOutOn,
+                      agreement.lines.indexOf(line),
+                    );
                     return (media?.photos ?? []).filter((photo) => photo.lineKey === key && photo.stage === 'check-out');
                   }}
                   photosStatus={photosStatus}

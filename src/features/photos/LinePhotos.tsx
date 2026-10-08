@@ -5,7 +5,7 @@ import { useCounter } from '../../layout/CounterContext';
 import { buildShareLink, shareUrl } from '../../lib/conditionRecords';
 import { getConditionStore, useAgreementMedia } from '../../lib/conditionStore';
 import { findItem } from '../../lib/inventory';
-import { canShareConditionPhotos, lineForAsset, lineKey, photoCheckInActive } from '../../lib/photoCheckIn';
+import { canShareConditionPhotos, lineAt, lineKey, photoCheckInActive } from '../../lib/photoCheckIn';
 import { usePhotoCheckInPilot } from '../../lib/pilot';
 import { useAgreements, useInventory } from '../../lib/store';
 import { PhotoColumns } from './PhotoColumns';
@@ -18,7 +18,7 @@ function noticeFrom(state: unknown): string | null {
 }
 
 export function LinePhotos() {
-  const { raNumber = '', assetTag = '' } = useParams();
+  const { raNumber = '', lineIndex: lineIndexParam = '' } = useParams();
   const notice = noticeFrom(useLocation().state);
   const agreement = useAgreements().find((item) => item.raNumber === raNumber);
   const inventory = useInventory();
@@ -40,11 +40,12 @@ export function LinePhotos() {
     );
   }
 
-  const line = lineForAsset(agreement.lines, assetTag);
+  const lineIndex = Number(lineIndexParam);
+  const line = lineAt(agreement.lines, lineIndex);
   if (!line) {
     return (
       <section className="empty-state">
-        <h1>{assetTag} is not on {agreement.raNumber}</h1>
+        <h1>That line is not on {agreement.raNumber}</h1>
         <p>
           <Link to={`/agreements/${agreement.raNumber}`}>Back to {agreement.raNumber}</Link>
         </p>
@@ -54,7 +55,7 @@ export function LinePhotos() {
 
   const open = agreement;
   const currentLine = line;
-  const key = lineKey(open.raNumber, currentLine.assetTag, currentLine.checkedOutOn);
+  const key = lineKey(open.raNumber, currentLine.assetTag, currentLine.checkedOutOn, lineIndex);
   const itemName = findItem(inventory, currentLine.assetTag)?.name ?? 'Unknown item';
   const photosOn = photoCheckInActive(agreement.location, pilot);
   const photos = (media?.photos ?? []).filter((photo) => photo.lineKey === key);
@@ -111,7 +112,7 @@ export function LinePhotos() {
         </div>
         {photosOn && line.returned && (
           <div className="page-header__actions">
-            <Link className="button" to={`/agreements/${agreement.raNumber}/lines/${line.assetTag}/bench`}>
+            <Link className="button" to={`/agreements/${agreement.raNumber}/lines/${lineIndex}/bench`}>
               Log bench finding
             </Link>
           </div>

@@ -212,11 +212,11 @@ export function AgreementDetail() {
                   <td className="notes">{line.returnNotes}</td>
                   {photosOn && (
                     <td>
-                      <Link to={`/agreements/${agreement.raNumber}/lines/${line.assetTag}`}>Photos</Link>
+                      <Link to={`/agreements/${agreement.raNumber}/lines/${index}`}>Photos</Link>
                       {line.returned && (
                         <>
                           {' · '}
-                          <Link to={`/agreements/${agreement.raNumber}/lines/${line.assetTag}/bench`}>Bench finding</Link>
+                          <Link to={`/agreements/${agreement.raNumber}/lines/${index}/bench`}>Bench finding</Link>
                         </>
                       )}
                     </td>
