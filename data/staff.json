@@ -1,0 +1,8 @@
+[
+  { "id": "luis-ibarra", "name": "Luis Ibarra", "initials": "LI", "location": "Burbank", "role": "Counter lead" },
+  { "id": "omar-farouk", "name": "Omar Farouk", "initials": "OF", "location": "Burbank", "role": "Counter staff" },
+  { "id": "tasha-greene", "name": "Tasha Greene", "initials": "TG", "location": "Atlanta", "role": "Counter lead" },
+  { "id": "grace-kim", "name": "Grace Kim", "initials": "GK", "location": "Atlanta", "role": "Counter staff" },
+  { "id": "ray-delgado", "name": "Ray Delgado", "initials": "RD", "location": "Albuquerque", "role": "Counter lead" },
+  { "id": "jess-moreno", "name": "Jess Moreno", "initials": "JM", "location": "Albuquerque", "role": "Counter staff" }
+]

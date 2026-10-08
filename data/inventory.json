@@ -1,0 +1,29 @@
+[
+  { "assetTag": "BUR-LT-0142", "barcode": "1100142", "name": "2K LED fresnel", "category": "Lighting", "location": "Burbank", "dailyRate": 85, "status": "Out" },
+  { "assetTag": "BUR-LT-0157", "barcode": "1100157", "name": "1.2K HMI head", "category": "Lighting", "location": "Burbank", "dailyRate": 140, "status": "Out" },
+  { "assetTag": "BUR-LT-0166", "barcode": "1100166", "name": "LED panel 2x1", "category": "Lighting", "location": "Burbank", "dailyRate": 65, "status": "Out" },
+  { "assetTag": "BUR-LT-0171", "barcode": "1100171", "name": "2K LED fresnel", "category": "Lighting", "location": "Burbank", "dailyRate": 85, "status": "Available" },
+  { "assetTag": "BUR-GR-0203", "barcode": "1200203", "name": "C-stand 40 in.", "category": "Grip", "location": "Burbank", "dailyRate": 12, "status": "Out" },
+  { "assetTag": "BUR-GR-0218", "barcode": "1200218", "name": "6x6 butterfly frame", "category": "Grip", "location": "Burbank", "dailyRate": 35, "status": "Available" },
+  { "assetTag": "BUR-GR-0225", "barcode": "1200225", "name": "Apple box set", "category": "Grip", "location": "Burbank", "dailyRate": 15, "status": "Out" },
+  { "assetTag": "BUR-PW-0090", "barcode": "1300090", "name": "Distro box 100A", "category": "Power", "location": "Burbank", "dailyRate": 95, "status": "Available" },
+  { "assetTag": "BUR-CT-0004", "barcode": "1400004", "name": "Head cart", "category": "Carts & cases", "location": "Burbank", "dailyRate": 40, "status": "Available" },
+  { "assetTag": "BUR-CT-0009", "barcode": "1400009", "name": "Cine lens case", "category": "Carts & cases", "location": "Burbank", "dailyRate": 55, "status": "Service bench" },
+
+  { "assetTag": "ATL-LT-0221", "barcode": "2100221", "name": "LED panel 2x1", "category": "Lighting", "location": "Atlanta", "dailyRate": 65, "status": "Out" },
+  { "assetTag": "ATL-LT-0230", "barcode": "2100230", "name": "1.2K HMI head", "category": "Lighting", "location": "Atlanta", "dailyRate": 140, "status": "Available" },
+  { "assetTag": "ATL-GR-0310", "barcode": "2200310", "name": "12x12 silk", "category": "Grip", "location": "Atlanta", "dailyRate": 45, "status": "Out" },
+  { "assetTag": "ATL-GR-0314", "barcode": "2200314", "name": "Combo stand", "category": "Grip", "location": "Atlanta", "dailyRate": 18, "status": "Out" },
+  { "assetTag": "ATL-GR-0322", "barcode": "2200322", "name": "C-stand 40 in.", "category": "Grip", "location": "Atlanta", "dailyRate": 12, "status": "Available" },
+  { "assetTag": "ATL-PW-0058", "barcode": "2300058", "name": "Distro box 100A", "category": "Power", "location": "Atlanta", "dailyRate": 95, "status": "Out" },
+  { "assetTag": "ATL-PW-0061", "barcode": "2300061", "name": "Stinger 25 ft 12/3", "category": "Power", "location": "Atlanta", "dailyRate": 8, "status": "Out" },
+  { "assetTag": "ATL-CT-0012", "barcode": "2400012", "name": "Grip cart", "category": "Carts & cases", "location": "Atlanta", "dailyRate": 45, "status": "Available" },
+
+  { "assetTag": "ABQ-LT-0019", "barcode": "3100019", "name": "2K LED fresnel", "category": "Lighting", "location": "Albuquerque", "dailyRate": 85, "status": "Out" },
+  { "assetTag": "ABQ-LT-0024", "barcode": "3100024", "name": "LED panel 2x1", "category": "Lighting", "location": "Albuquerque", "dailyRate": 65, "status": "Out" },
+  { "assetTag": "ABQ-GR-0402", "barcode": "3200402", "name": "Dolly track 8 ft", "category": "Grip", "location": "Albuquerque", "dailyRate": 20, "status": "Out" },
+  { "assetTag": "ABQ-GR-0405", "barcode": "3200405", "name": "Chain motor 1 ton", "category": "Grip", "location": "Albuquerque", "dailyRate": 110, "status": "Out" },
+  { "assetTag": "ABQ-PW-0077", "barcode": "3300077", "name": "Generator cart", "category": "Power", "location": "Albuquerque", "dailyRate": 325, "status": "Out" },
+  { "assetTag": "ABQ-PW-0081", "barcode": "3300081", "name": "Stinger 25 ft 12/3", "category": "Power", "location": "Albuquerque", "dailyRate": 8, "status": "Available" },
+  { "assetTag": "ABQ-CT-0015", "barcode": "3400015", "name": "Head cart", "category": "Carts & cases", "location": "Albuquerque", "dailyRate": 40, "status": "Service bench" }
+]
