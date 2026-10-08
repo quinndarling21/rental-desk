@@ -5,7 +5,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { agreementStatus, itemsOut } from '../../lib/agreements';
 import { formatDate, todayISO } from '../../lib/dates';
 import { findItem } from '../../lib/inventory';
-import { useAgreements, useInventory } from '../../lib/store';
+import { useAgreements, useDamageReports, useInventory } from '../../lib/store';
 
 /** Check-out and return pass a confirmation message along in the navigation state. */
 function noticeFrom(state: unknown): string | null {
@@ -20,6 +20,7 @@ export function AgreementDetail() {
   const notice = noticeFrom(useLocation().state);
   const agreement = useAgreements().find((a) => a.raNumber === raNumber);
   const inventory = useInventory();
+  const damageReports = useDamageReports(raNumber ?? '');
 
   if (!agreement) {
     return (
@@ -60,6 +61,11 @@ export function AgreementDetail() {
           <Link className="button" to={`/checkout?ra=${agreement.raNumber}`}>
             Check out more items
           </Link>
+          {outCount > 0 && (
+            <Link className="button button--primary" to={`/agreements/${agreement.raNumber}/return`}>
+              Return check-in
+            </Link>
+          )}
         </div>
       </div>
 
@@ -103,6 +109,48 @@ export function AgreementDetail() {
           </div>
         </dl>
       </section>
+
+      {damageReports.length > 0 && (
+        <section className="card card--flush card--flagged">
+          <div className="card__header">
+            <h2>Damage flags</h2>
+            <span className="muted">Counter lead reviews the return slip and opens any damage charge.</span>
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Asset tag</th>
+                  <th>Item</th>
+                  <th>Condition</th>
+                  <th>Notes</th>
+                  <th>Returned</th>
+                  <th>Routing</th>
+                </tr>
+              </thead>
+              <tbody>
+                {damageReports.map((report) => (
+                  <tr key={report.id}>
+                    <td className="mono">{report.assetTag}</td>
+                    <td>{findItem(inventory, report.assetTag)?.name ?? 'Unknown item'}</td>
+                    <td>
+                      <StatusBadge status={report.condition} />
+                    </td>
+                    <td className="notes">{report.notes}</td>
+                    <td>
+                      <div>{formatDate(report.reportedOn)}</div>
+                      <div className="cell-sub">
+                        <StaffInitials initials={report.reportedBy} />
+                      </div>
+                    </td>
+                    <td className="flagged-to">Flagged to {report.routedTo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       <section className="card card--flush">
         <div className="card__header">

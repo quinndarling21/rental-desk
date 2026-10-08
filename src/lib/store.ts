@@ -1,7 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
-import type { Agreement, InventoryItem, ItemStatus } from '../types';
+import type { Agreement, DamageReport, InventoryItem, ItemStatus, ReturnRecord } from '../types';
 import { baseAgreements } from './agreements';
-import { baseInventory } from './inventory';
+import { baseInventory, statusAfterReturn } from './inventory';
 
 const STORAGE_KEY = 'rental-desk.session';
 
@@ -11,10 +11,11 @@ const STORAGE_KEY = 'rental-desk.session';
  */
 export interface SessionChanges {
   agreements: Record<string, Agreement>;
+  damageReports: Record<string, DamageReport[]>;
   itemStatus: Record<string, ItemStatus>;
 }
 
-const noChanges: SessionChanges = { agreements: {}, itemStatus: {} };
+const noChanges: SessionChanges = { agreements: {}, damageReports: {}, itemStatus: {} };
 
 function load(): SessionChanges {
   try {
@@ -55,6 +56,19 @@ export function saveCheckOut(agreement: Agreement, assetTags: string[]) {
   commit({ ...changes, agreements: { ...changes.agreements, [agreement.raNumber]: agreement }, itemStatus });
 }
 
+/** Saves a completed return: the updated agreement, any damage reports, and where each item went. */
+export function saveReturn(agreement: Agreement, record: ReturnRecord, reports: DamageReport[]) {
+  const itemStatus = { ...changes.itemStatus };
+  for (const line of record.lines) itemStatus[line.assetTag] = statusAfterReturn(line.condition);
+
+  const existingReports = changes.damageReports[agreement.raNumber] ?? [];
+  commit({
+    agreements: { ...changes.agreements, [agreement.raNumber]: agreement },
+    damageReports: { ...changes.damageReports, [agreement.raNumber]: [...existingReports, ...reports] },
+    itemStatus,
+  });
+}
+
 export function useSessionChanges(): SessionChanges {
   return useSyncExternalStore(subscribe, getChanges);
 }
@@ -80,4 +94,10 @@ export function useInventory(): InventoryItem[] {
       }),
     [itemStatus],
   );
+}
+
+const noReports: DamageReport[] = [];
+
+export function useDamageReports(raNumber: string): DamageReport[] {
+  return useSessionChanges().damageReports[raNumber] ?? noReports;
 }

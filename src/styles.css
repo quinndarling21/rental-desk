@@ -693,3 +693,39 @@ a:hover {
 .sign-off + .banner {
   margin: var(--space-4) 0 0;
 }
+
+/* ==========================================================================
+   Return check-in and damage flags
+   ========================================================================== */
+
+.card__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.return-table tr.is-returned {
+  background: #f5f9fd;
+}
+
+.return-table__notes {
+  min-width: 220px;
+}
+
+.return-table__notes .field__error {
+  margin-top: var(--space-1);
+}
+
+.card--flagged {
+  border-color: #efb4ad;
+}
+
+.card--flagged .card__header {
+  background: var(--color-danger-bg);
+}
+
+.flagged-to {
+  color: var(--color-danger);
+  font-weight: 600;
+  white-space: nowrap;
+}

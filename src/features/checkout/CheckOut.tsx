@@ -6,6 +6,7 @@ import { useCounter } from '../../layout/CounterContext';
 import {
   addCheckOutLines,
   agreementStatus,
+  countItems,
   itemsOut,
   nextRaNumber,
   openAgreement,
@@ -151,9 +152,8 @@ export function CheckOut() {
     const updated = addCheckOutLines(agreement, items, staffInitials, today);
     saveCheckOut(updated, items.map((added) => added.assetTag));
 
-    const count = items.length === 1 ? '1 item' : `${items.length} items`;
     navigate(`/agreements/${updated.raNumber}`, {
-      state: { notice: `Checked out ${count} to ${updated.production} on ${updated.raNumber}.` },
+      state: { notice: `Checked out ${countItems(items.length)} to ${updated.production} on ${updated.raNumber}.` },
     });
   }
 
@@ -313,7 +313,7 @@ export function CheckOut() {
             <h2>Items</h2>
             {items.length > 0 && (
               <span className="muted">
-                {items.length} {items.length === 1 ? 'item' : 'items'}, {formatDailyRate(dailyTotal)}
+                {countItems(items.length)}, {formatDailyRate(dailyTotal)}
               </span>
             )}
           </div>

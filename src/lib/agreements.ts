@@ -1,5 +1,5 @@
 import agreementsData from '../../data/agreements.json';
-import type { Agreement, AgreementLine, AgreementStatus, Condition, Contact, Location } from '../types';
+import type { Agreement, AgreementLine, AgreementStatus, Condition, Contact, Location, ReturnRecord } from '../types';
 
 export const baseAgreements = agreementsData as Agreement[];
 
@@ -11,6 +11,10 @@ export function isAgreementStatus(value: unknown): value is AgreementStatus {
 
 export function itemsOut(agreement: Agreement): AgreementLine[] {
   return agreement.lines.filter((line) => !line.returned);
+}
+
+export function countItems(count: number): string {
+  return count === 1 ? '1 item' : `${count} items`;
 }
 
 export function agreementStatus(agreement: Agreement, today: string): AgreementStatus {
@@ -91,4 +95,22 @@ export function addCheckOutLines(
     returned: false,
   }));
   return { ...agreement, lines: [...agreement.lines, ...lines] };
+}
+
+/** Closes the open line for each returned asset tag. An item is only ever on one open line. */
+export function applyReturn(agreement: Agreement, record: ReturnRecord): Agreement {
+  const returnedByTag = new Map(record.lines.map((returned) => [returned.assetTag, returned]));
+  const lines = agreement.lines.map((line) => {
+    const returned = line.returned ? undefined : returnedByTag.get(line.assetTag);
+    if (!returned) return line;
+    return {
+      ...line,
+      returned: true,
+      returnedOn: record.returnedOn,
+      returnedBy: record.receivedBy,
+      returnCondition: returned.condition,
+      returnNotes: returned.notes,
+    };
+  });
+  return { ...agreement, lines };
 }

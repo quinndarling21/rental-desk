@@ -3,6 +3,7 @@ import type { Agreement, AgreementLine } from '../types';
 import {
   addCheckOutLines,
   agreementStatus,
+  applyReturn,
   baseAgreements,
   filterAgreements,
   itemsOut,
@@ -145,5 +146,36 @@ describe('addCheckOutLines', () => {
       conditionOut: 'Needs service',
       returned: false,
     });
+  });
+});
+
+describe('applyReturn', () => {
+  it('closes only the returned lines with condition, notes, date and staff', () => {
+    const updated = applyReturn(agreement({ lines: [line('BUR-LT-0142'), line('BUR-GR-0203')] }), {
+      raNumber: 'RA-24141',
+      returnedOn: TODAY,
+      receivedBy: 'LI',
+      lines: [{ assetTag: 'BUR-GR-0203', condition: 'Damaged', notes: 'Bent riser.' }],
+    });
+
+    expect(updated.lines[0].returned).toBe(false);
+    expect(updated.lines[1]).toMatchObject({
+      returned: true,
+      returnedOn: TODAY,
+      returnedBy: 'LI',
+      returnCondition: 'Damaged',
+      returnNotes: 'Bent riser.',
+    });
+  });
+
+  it('leaves lines that were already returned alone', () => {
+    const earlier = { ...line('BUR-LT-0142', true), returnedOn: '2026-10-03', returnCondition: 'OK' as const };
+    const updated = applyReturn(agreement({ lines: [earlier] }), {
+      raNumber: 'RA-24141',
+      returnedOn: TODAY,
+      receivedBy: 'LI',
+      lines: [{ assetTag: 'BUR-LT-0142', condition: 'Damaged', notes: 'Cracked lens.' }],
+    });
+    expect(updated.lines[0]).toEqual(earlier);
   });
 });
