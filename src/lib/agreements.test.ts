@@ -147,6 +147,16 @@ describe('addCheckOutLines', () => {
       returned: false,
     });
   });
+
+  it('stores a check-out condition note when photo check-in records one', () => {
+    const updated = addCheckOutLines(
+      agreement({ lines: [] }),
+      [{ assetTag: 'BUR-PW-0090', condition: 'OK', note: 'Yoke scuffed before it went out' }],
+      'OF',
+      TODAY,
+    );
+    expect(updated.lines[0].conditionOutNote).toBe('Yoke scuffed before it went out');
+  });
 });
 
 describe('applyReturn', () => {

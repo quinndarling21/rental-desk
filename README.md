@@ -50,10 +50,15 @@ src/
     agreements/          agreements list and agreement detail
     checkout/            check-out
     returns/             return check-in
+    bench/               bench findings logged after return
+    photos/              per-line photos and the read-only share page
   lib/
     agreements.ts        status, filtering, check-out and return rules
     inventory.ts         asset tag and barcode lookup, availability
     damageReports.ts     damage reports and routing to the counter lead
+    photoCheckIn.ts      photo, condition, stamp, and Burbank pilot rules
+    conditionStore.ts    photo storage interface; IndexedDB in the browser
+    pilot.ts             Burbank photo check-in switch
     store.ts             changes made in this browser, saved to localStorage
     staff.ts, locations.ts, dates.ts
 .github/workflows/pages.yml
@@ -64,6 +69,8 @@ src/
 All data is local JSON in `data/`, bundled at build time. There is no backend and no login.
 
 Check-outs, returns and damage flags made at the counter are kept in the browser (localStorage key `rental-desk.session`) and applied on top of the JSON. The counter location and signed-in staff are kept under `rental-desk.counter`. Clearing site data in the browser starts fresh from the JSON.
+
+The Burbank photo check-in pilot stores photos and condition records in this browser (IndexedDB database `rental-desk-condition`), behind a storage interface. There is no backend yet, so another device cannot see them, and clearing site data removes them. The pilot switch is `rental-desk.photo-checkin-pilot` in localStorage. It applies only when the agreement location is Burbank. It is on until someone turns it off at the Burbank counter.
 
 Agreement status comes from the current date: Out, Due today, Overdue, or Returned once every item is back.
 

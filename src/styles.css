@@ -187,6 +187,17 @@ a:hover {
   color: var(--color-text);
 }
 
+.top-bar__field input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: #fff;
+}
+
+.top-bar__hint {
+  font-size: 0.8rem;
+  color: #c8d2df;
+}
+
 .top-bar .staff__initials {
   background: #fff;
   color: var(--color-brand);
@@ -728,4 +739,211 @@ a:hover {
   color: var(--color-danger);
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* ==========================================================================
+   Photo check-in
+   ========================================================================== */
+
+.textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.button.is-disabled {
+  opacity: 0.55;
+}
+
+.checkout-lines,
+.return-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checkout-lines {
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.checkout-line,
+.return-line {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.checkout-line:last-child,
+.return-line:last-child {
+  border-bottom: 0;
+}
+
+.return-line.is-returned {
+  background: #f5f9fd;
+}
+
+.checkout-line__top,
+.return-line__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.return-line__condition {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.return-line__note {
+  margin: 0;
+}
+
+.photo-checkin-note {
+  margin: 0;
+  padding: var(--space-3) var(--space-5) 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.photo-pair,
+.photo-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.photo-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.photo-column h2,
+.photo-pair h3 {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.photo-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.stamped-photo {
+  margin: 0;
+}
+
+.stamped-photo img {
+  display: block;
+  width: 180px;
+  height: 135px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface-muted);
+}
+
+.stamped-photo figcaption {
+  margin-top: var(--space-1);
+  max-width: 180px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.photo-columns .stamped-photo img {
+  width: 100%;
+  height: 200px;
+}
+
+.photo-columns .stamped-photo figcaption {
+  max-width: none;
+}
+
+.record-summary p,
+.bench-finding p {
+  margin: var(--space-2) 0;
+}
+
+.ack {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+}
+
+.ack legend {
+  padding: 0 var(--space-2);
+  font-weight: 600;
+}
+
+.ack__confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-weight: 600;
+}
+
+.share-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+.share-row .input {
+  flex: 1 1 240px;
+}
+
+.share-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+.share-page__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  color: var(--color-brand);
+  font-weight: 600;
+}
+
+.share-page .wordmark {
+  color: var(--color-brand);
+}
+
+.share-disclaimer {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 800px) {
+  .photo-pair,
+  .photo-columns,
+  .return-line__condition {
+    grid-template-columns: 1fr;
+  }
 }

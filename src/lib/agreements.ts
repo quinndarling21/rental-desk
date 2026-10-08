@@ -79,6 +79,8 @@ export function openAgreement(
 export interface CheckOutItem {
   assetTag: string;
   condition: Condition;
+  /** Set when photo check-in is on, including "" when no wear was noted. */
+  note?: string;
 }
 
 export function addCheckOutLines(
@@ -92,6 +94,7 @@ export function addCheckOutLines(
     checkedOutOn: today,
     checkedOutBy: staffInitials,
     conditionOut: item.condition,
+    ...(item.note !== undefined ? { conditionOutNote: item.note.trim() } : {}),
     returned: false,
   }));
   return { ...agreement, lines: [...agreement.lines, ...lines] };

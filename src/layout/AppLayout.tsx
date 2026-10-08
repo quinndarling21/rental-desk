@@ -2,11 +2,15 @@ import { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { StaffInitials } from '../components/StaffInitials';
 import { isLocation, LOCATIONS } from '../lib/locations';
+import { PHOTO_CHECKIN_PILOT_LOCATION, photoCheckInActive } from '../lib/photoCheckIn';
+import { setPhotoCheckInPilot, usePhotoCheckInPilot } from '../lib/pilot';
 import { staff, staffAt } from '../lib/staff';
 import { useCounter } from './CounterContext';
 
 export function AppLayout() {
   const { location, signedIn, setLocation, setSignedIn } = useCounter();
+  const pilotEnabled = usePhotoCheckInPilot();
+  const pilotHere = photoCheckInActive(location, pilotEnabled);
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -53,6 +57,20 @@ export function AppLayout() {
           </label>
 
           <StaffInitials initials={signedIn.initials} />
+
+          <label className="top-bar__field">
+            <span>Photo check-in</span>
+            <input
+              type="checkbox"
+              checked={pilotEnabled}
+              disabled={location !== PHOTO_CHECKIN_PILOT_LOCATION}
+              aria-describedby="photo-checkin-pilot-hint"
+              onChange={(event) => setPhotoCheckInPilot(event.target.checked)}
+            />
+          </label>
+          <span id="photo-checkin-pilot-hint" className="top-bar__hint">
+            {pilotHere ? 'On at Burbank' : 'Burbank pilot only'}
+          </span>
         </div>
       </header>
 
